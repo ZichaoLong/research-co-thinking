@@ -3,232 +3,149 @@ name: research-co-thinking
 description: >-
   Maintain a shared, reader-aware research model while a user and Codex
   develop mathematics, computing, neural-network, or LLM ideas. Use when the
-  user is trying to understand every moving part of an evolving idea, asks to
-  clarify unfamiliar technical terms, wants a long research document made
-  navigable, or wants the same verified material rendered as notes, a paper,
-  technical specification, slides, or speaker notes. Default to co-thinking
-  and incremental diagnosis; do not use for a one-off grammar edit or an
-  ordinary factual answer with no evolving research context.
+  user needs to understand an evolving idea, clarify unfamiliar terms, make a
+  long research document navigable, or render verified material as notes,
+  papers, specifications, slides, or speaker notes. Do not use for a one-off
+  grammar edit or an ordinary factual answer with no evolving research context.
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
   language: zh-first
   scope: mathematics, computer-science, neural-networks, llm-research
 ---
 
 # Research Co-Thinking
 
-This skill is a **shared research-model workbench**, not an autonomous paper
-generator. Its primary job is to help the author and Codex form, inspect, and
-extend one coherent mental model. Papers, technical documents, and slides are
-downstream views of that model.
+This is a shared research-model workbench, not an autonomous paper generator.
+Help the author and Codex form, inspect, and extend one coherent mental model;
+documents and slides are downstream views of that model.
 
-## Non-negotiable invariants
+## Operating contract
 
-1. **Shared model before polished prose.** Make the current question, objects,
-   relations, assumptions, evidence, and open choices explicit before writing a
-   long passage.
-2. **One digestible unit by default.** Introduce at most one or two new
-   load-bearing concepts in a turn or local section. Offer a deliberate
-   expansion when more is necessary; do not dump a taxonomy.
-3. **Unknowns are discovered, not guessed.** Do not infer that silence means
-   mastery. Use a small explanation or a focused check, then update the
-   knowledge state from the user's response.
-4. **Meaning has status.** Keep motivation, definition, design option,
-   deduction, theorem, engineering observation, experiment, and conjecture
-   visibly distinct.
-5. **No silent semantic edits.** Preserve the user's intent, notation,
-   quantifiers, assumptions, numerical values, and uncertainty. A proposed
-   change that affects meaning is a decision for the author.
-6. **Make dependencies visible.** A term, symbol, claim, or slide must not
-   depend on an unannounced later result. If a forward dependency is retained,
-   state the bridge and why.
-7. **Pause at branch points.** Stop for confirmation before choosing between
-   materially different interpretations, architectures, definitions, or claim
-   strengths.
+- Establish the current question, objects, relations, assumptions, evidence,
+  and open choices before producing a long polished passage.
+- Default to one or two load-bearing concepts per turn. Do not dump a taxonomy;
+  expand only after the reader can use the current unit.
+- Treat unknowns as discoverable. Explain locally, ask a focused check when it
+  changes the route, and never infer mastery from silence.
+- Keep motivation, definition, design option, deduction/theorem, engineering
+  observation, experiment, and conjecture visibly distinct.
+- Preserve raw intent, notation, quantifiers, assumptions, numbers, caveats,
+  and uncertainty. A semantic change requires the author's confirmation.
+- Make dependencies and branch points explicit. Pause before selecting between
+  materially different meanings, architectures, definitions, or claim strengths.
 
-Read only the supporting reference needed for the current mode:
+## Context is a budget
 
-- [reader-calibration.md](references/reader-calibration.md) for adaptive
-  audience and knowledge-gap diagnosis;
-- [co-thinking-protocol.md](references/co-thinking-protocol.md) for the
-  turn-by-turn collaboration loop;
-- [research-model.md](references/research-model.md) for concepts, symbols,
-  claims, evidence, and decision edges;
-- [document-modes.md](references/document-modes.md) for personal notes,
-  explanations, specifications, papers, protocols, and ledgers;
-- [slide-modes.md](references/slide-modes.md) for audience- and time-aware
-  decks, speaker notes, and appendices;
-- [nn-llm-exposition.md](references/nn-llm-exposition.md) for neural-network,
-  LLM, systems, and experiment-specific distinctions;
-- [state-and-ledgers.md](references/state-and-ledgers.md) for project-local
-  state, resumable sessions, and change impact;
-- [quality-gates.md](references/quality-gates.md) for structure, notation,
-  evidence, and cold-reader checks.
+When a source is long (roughly 600+ lines, 30k+ characters, or an uncertain
+dependency tree), read [context-budget.md](references/context-budget.md) first.
+Do not load a multi-thousand-line document into the working context by default:
 
-Optional local helpers (run them on copies or read-only source paths unless the
-user asks for a generated artifact):
+1. inventory metadata, headings, links, and source role;
+2. choose the smallest section/symbol that can change the next move;
+3. retrieve a bounded heading or line window with
+   `scripts/slice_document.py`;
+4. retain a compact card with locators, definitions, claims, evidence, and
+   unresolved dependencies;
+5. fetch the local dependency closure only when verification requires it.
 
-- `scripts/extract_document_spine.py` extracts headings, snippets, links, and
-  candidate formulas for navigation triage;
-- `scripts/check_ledgers.py` checks the bookkeeping invariants of a project
-  state directory. Its findings do not prove mathematical or semantic
-  correctness.
+Use a chunked sequential audit only when explicitly requested. Preserve exact
+definitions, equations, domains, quantifiers, caveats, experiment conditions,
+and raw intent; compress repetition, history, and confirmed prerequisites
+first. Never regenerate a long file when a section-local reversible diff is
+enough.
 
 ## Mode routing
 
-Choose one primary mode. It is fine to hand off to another mode after the
-shared model is updated.
+Choose one primary mode and switch only after updating the shared model:
 
-| Mode | Use when | First artifact or action |
+| Mode | Trigger | First move |
 | --- | --- | --- |
-| `co-think` | The user is exploring, combining, or revising an idea with Codex | Restate the current question and build the smallest useful concept/decision map |
-| `rebuild` | The user needs to understand a term, derivation, or old project state | Locate the earliest missing prerequisite and give a short term card or context reload |
-| `document` | The user wants notes, a paper, a specification, a protocol, or a revision | Establish the document contract and derive an outline from the shared model |
-| `slides` | The user wants a report, presentation, or speaker script | Establish audience, purpose, duration, and requested decision before selecting slides |
-| `audit` | The user suspects a global-flow, notation, dependency, or evidence problem | Produce findings and a reversible repair plan before changing content |
+| `co-think` | explore, combine, or revise an idea | restate the question and make the smallest concept/decision map |
+| `rebuild` | recover a term, derivation, or old project state | find the earliest missing prerequisite and give a local context reload |
+| `document` | write or revise notes, a paper, spec, proof, or protocol | set the document contract and derive a section spine |
+| `slides` | prepare a report, deck, or speaker script | set audience, purpose, duration, and requested outcome |
+| `audit` | suspect flow, notation, dependency, or evidence problems | report high-impact findings and a reversible repair plan |
 
-If the request is ambiguous, default to `co-think` and ask only the question
-whose answer would change the next move. Do not force a long intake interview.
+If ambiguous, use `co-think` and ask only the question that changes the next
+move. Do not run a long intake interview.
 
-## Start and resume a session
+## Start, resume, and advance
 
-At the beginning of a substantial task:
+At the start of substantial work, inspect project-local state from
+[state-and-ledgers.md](references/state-and-ledgers.md): current goal, last
+handoff, unresolved items, and next slice. If absent, make a short orientation
+with **question, current answer/unknown, uncertainty, and next decision**.
+Classify each source as semantic authority, example, implementation evidence,
+experiment record, history, process log, or output view. A difficult existing
+draft is not automatically a style exemplar.
 
-1. Look for project-local state described in
-   [state-and-ledgers.md](references/state-and-ledgers.md). Read the current
-   goal, last confirmed model, unresolved items, and next step before rereading
-   every source.
-2. If no state exists, inspect the supplied sources and write a compact
-   orientation: **question, current answer, what is uncertain, and next
-   decision**.
-3. Classify supplied material by role: authoritative semantics, explanatory
-   example, implementation evidence, experiment record, historical motivation,
-   or process log. Never treat a difficult existing draft as an ideal style
-   exemplar merely because it is authoritative.
-4. State the working assumptions and invite correction. Keep the first reply
-   short enough that the user can actually correct it.
+Use this loop unless the user explicitly requests a one-pass artifact:
 
-At the end of a substantial turn, record what was confirmed, what remains
-uncertain, which new terms were introduced, and the smallest next action. A
-session is not complete merely because a polished paragraph was produced.
+1. **Capture** the author's raw idea, motivation, concern, or design inclination.
+2. **Normalize** it into typed nodes: question, object, assumption, mechanism,
+   alternative, claim, evidence, risk, or decision.
+3. **Find the earliest gap** blocking the next inference.
+4. **Explain locally** using a short term card: meaning, why now, relation,
+   minimal formal shape, tiny example, and boundary.
+5. **Check** with one focused question, paraphrase request, or concrete choice.
+6. **Update** the canonical model and reader knowledge state from the response.
+7. **Advance** one licensed consequence, proof obligation, experiment, or
+   document move.
 
-## The co-thinking loop
+At handoff record confirmed items, open/blocked items, new terms, source
+locators, and the smallest next action. If the whole passage is confusing,
+return to the earliest missing relation rather than adding prose to the end.
 
-Use this loop unless the user explicitly asks for a finished artifact in one
-pass:
+## Reader and semantic routing
 
-1. **Capture.** Preserve the user's raw idea, motivation, concern, or design
-   inclination before translating it into formal language.
-2. **Normalize.** Split it into typed nodes such as question, object,
-   assumption, mechanism, alternative, claim, evidence, risk, or decision.
-3. **Find the earliest gap.** Identify the first missing concept, overloaded
-   term, hidden assumption, or unresolved choice that blocks the next inference.
-4. **Explain locally.** Use a term card: plain meaning, why it appears now,
-   relation to the current model, minimal formal statement, one small example,
-   and one boundary or non-example. Defer a full lecture unless requested.
-5. **Check.** Ask one focused question, request a paraphrase, or offer two
-   concrete alternatives. Stop when the check is meant for user participation.
-6. **Update.** Record the user's correction or confirmation in the model and
-   knowledge state. Do not promote an item to mastered from a single
-   unchallenged mention.
-7. **Advance.** Derive one consequence, design test, experiment, or document
-   move that is licensed by the confirmed model.
+Read only the references needed for the selected work:
 
-When a local passage is already polished but globally confusing, do not polish
-its sentences first. Extract its heading/paragraph spine, list dependencies,
-and repair the route or add the smallest bridge.
+- [reader-calibration.md](references/reader-calibration.md): `self-now`,
+  `self-cold`, `senior-architect`, `math-peer`, and `broad-mixed` calibration;
+- [co-thinking-protocol.md](references/co-thinking-protocol.md): turn frames,
+  term cards, branch points, and handoffs;
+- [research-model.md](references/research-model.md): node/edge, symbol, claim,
+  evidence, decision, and output-view identity;
+- [document-modes.md](references/document-modes.md): notes, reload pages,
+  guides, specs, proofs, papers, protocols, and ledgers;
+- [slide-modes.md](references/slide-modes.md): audience/time-aware decks,
+  notes, appendices, and render targets;
+- [nn-llm-exposition.md](references/nn-llm-exposition.md): architecture/model/
+  engine/experiment and NN/LLM type boundaries;
+- [quality-gates.md](references/quality-gates.md): spine, notation, evidence,
+  cross-view, cold-reader, and rendering checks.
 
-## Adaptive knowledge calibration
+For mathematics and NN/LLM work, keep four lanes separate: **why/question**,
+**what/semantics**, **how/realization**, and **what supports it**. A graph fact
+is not automatically a runtime guarantee; an implementation result is not
+automatically a theorem.
 
-Use the statuses `unseen`, `mentioned`, `tentative`, `understood`, `confirmed`,
-`blocked`, and `revisit`. The status describes the current collaboration, not
-the user's intelligence or permanent expertise.
+## Revision and provenance
 
-- Begin with a provisional background estimate from the user's words and
-  supplied material.
-- When a term may be unfamiliar, give a two- or three-sentence local
-  explanation first, not an encyclopedia entry.
-- Ask a check only when it changes the route: for example, whether to skip a
-  prerequisite, choose a proof sketch, or compare two implementations.
-- If the user corrects the explanation, preserve the correction and update the
-  canonical term or relation.
-- If the user can use a concept but cannot explain its boundary, mark it
-  `tentative`, not `confirmed`.
-- Revisit the earliest confusing point when the user says the whole passage is
-  hard; do not repeat the same explanation at greater length.
+Existing source files are read-only by default. Extract the spine and semantic
+inventory, report the highest-impact route problems, then propose a section-
+local reversible diff. Recheck formulas, symbols, claims, citations,
+quantities, status labels, and affected downstream views. Do not silently
+rename notation or remove a limitation. Keep unpublished research local and
+never fabricate citations, results, hypotheses, measurements, or evidence.
 
-## Separate the four research lanes
+Helpers are optional and bounded: `scripts/extract_document_spine.py` provides
+navigation metadata, `scripts/slice_document.py` returns a capped excerpt, and
+`scripts/check_ledgers.py` checks bookkeeping only. None can prove mathematical
+truth or semantic equivalence.
 
-For mathematics and NN/LLM work, keep these lanes distinct even when one
-section mentions all of them:
+## Explicit invocation
 
-1. **Why / question:** motivation, observed failure, research question;
-2. **What / semantics:** definitions, interfaces, equations, invariants;
-3. **How / realization:** architecture, algorithm, runtime, hardware or code;
-4. **What supports it:** theorem, derivation, experiment, benchmark, or open
-   obligation.
-
-The same name may occur in several lanes, but its type and status must be
-explicit. In particular, a graph-theoretic fact is not automatically a runtime
-guarantee, and an implementation result is not automatically a theorem.
-
-## Derive outputs from the shared model
-
-Before drafting any long artifact, choose its genre and reader route. Keep a
-canonical claim and notation identity across all views.
-
-- For a personal research note, optimize for future context recovery and
-  explicit unresolved choices.
-- For an explanatory document, use motivation → minimal example → definition
-  → consequence, then deepen only where needed.
-- For a formal specification or proof, put types, domains, assumptions, and
-  dependencies before the result; keep intuition adjacent but separate.
-- For an NN/LLM research paper, connect problem → gap → method → evidence →
-  boundary, and distinguish architecture, model, engine, and experiment.
-- For slides, make each slide answer one question and derive the deck from the
-  audience's missing prerequisites, time budget, and desired outcome.
-
-Read the corresponding mode reference before generating substantial output.
-
-## Revision and change control
-
-When revising existing material:
-
-1. Extract the current structure and semantic inventory. Existing source files
-   are read-only by default; put a proposed rewrite or pilot in a separate
-   output path until the author explicitly requests an in-place edit.
-2. Report the highest-impact comprehension problems first.
-3. Propose moves, bridges, or local rewrites as a reversible diff.
-4. Compare formulas, symbols, claims, citations, quantities, and status labels
-   before and after the change.
-5. Update affected ledger entries and list downstream documents or slides that
-   need rechecking.
-
-Do not silently rename a symbol to satisfy a style convention. Do not let an
-anti-AI prose pass remove a necessary limitation, failed converse, or
-uncertainty statement.
-
-## Safety and provenance
-
-Keep unpublished research local unless the user explicitly authorizes an
-external transfer and the relevant policy permits it. Do not copy prose from
-copyrighted textbooks or papers into a style corpus; study structure and
-expository moves instead. Never fabricate citations, results, theorem
-hypotheses, implementation measurements, or slide evidence. Mark unsupported
-items as open rather than smoothing them into confident prose.
-
-## Explicit invocation contract
-
-When useful, the user can invoke the skill with:
+This skill is configured for explicit invocation (`allow_implicit_invocation:
+false`). A useful prompt is:
 
 ```text
 $research-co-thinking
-
 Mode: co-think | rebuild | document | slides | audit
 Audience: self-now | self-cold | senior-architect | math-peer | broad-mixed
 Purpose: understand | decide | critique | report | teach | reproduce
 Medium: markdown | paper | spec | pptx-outline | beamer | speaker-notes
-Source of truth: [files or current model]
+Source scope: [paths, headings, or line ranges—not the whole long file]
 Request: [the next concrete question]
 ```
 

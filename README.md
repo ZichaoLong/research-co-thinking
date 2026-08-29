@@ -12,12 +12,18 @@ intent, identify the earliest missing dependency, explain one small concept,
 check understanding, and only then advance. It does not treat polished prose
 as evidence of understanding.
 
+Version 0.2 adds bounded retrieval for long sources: the agent inventories a
+spine, slices only the relevant section or line window, and keeps compact cards
+and locators instead of repeatedly carrying a whole document in context.
+
 ## Contents
 
 - `SKILL.md` — routing, invariants, and invocation contract;
 - `references/` — reader calibration, co-thinking protocol, research-model
-  schema, document/slide modes, NN/LLM exposition, state, and quality gates;
-- `scripts/` — read-only navigation and ledger checks;
+  schema, long-document context budgeting, document/slide modes, NN/LLM
+  exposition, state, and quality gates;
+- `scripts/` — read-only spine extraction, bounded document slicing, and ledger
+  checks;
 - `pilot/` — a small, non-destructive exercise on TIDE/fractal-latcarf source
   material and a ledger fixture.
 

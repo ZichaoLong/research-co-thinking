@@ -72,7 +72,7 @@ def _looks_like_setext_title(text: str) -> bool:
     return not any(token in text for token in ("$", "\\", "{", "}", "=", "|", "`"))
 
 
-def extract(path: Path) -> dict:
+def extract(path: Path, *, include_formulas: bool = False, include_tree: bool = False) -> dict:
     text = path.read_text(encoding="utf-8", errors="replace")
     lines = text.splitlines()
     headings: list[dict] = []
@@ -125,31 +125,37 @@ def extract(path: Path) -> dict:
         links.extend(MDLINK_RE.findall(line))
         formulas.extend(FORMULA_RE.findall(line))
 
-    # Build a shallow nesting preview; the flat list retains exact locations.
-    tree: list[dict] = []
-    stack: list[dict] = []
-    for heading in headings:
-        node = {**heading, "children": []}
-        while stack and stack[-1]["level"] >= heading["level"]:
-            stack.pop()
-        if stack:
-            stack[-1]["children"].append(node)
-        else:
-            tree.append(node)
-        stack.append(node)
-
-    return {
+    record = {
         "path": str(path),
         "line_count": len(lines),
         "heading_count": len(headings),
         "max_heading_level": max((h["level"] for h in headings), default=0),
         "headings": headings,
-        "tree": tree,
         "first_snippet": _first_sentence(lines),
         "links": sorted(set(links)),
         "formula_candidate_count": len(formulas),
-        "formula_candidates": formulas[:50],
     }
+    # These optional payloads can be large; keep them out of the normal
+    # inventory so a long source does not consume the caller's context budget.
+    if include_formulas:
+        record["formula_candidates"] = [
+            formula if len(formula) <= 400 else formula[:397] + "..."
+            for formula in formulas[:20]
+        ]
+    if include_tree:
+        tree: list[dict] = []
+        stack: list[dict] = []
+        for heading in headings:
+            node = {**heading, "children": []}
+            while stack and stack[-1]["level"] >= heading["level"]:
+                stack.pop()
+            if stack:
+                stack[-1]["children"].append(node)
+            else:
+                tree.append(node)
+            stack.append(node)
+        record["tree"] = tree
+    return record
 
 
 def _iter_paths(items: Iterable[str]) -> list[Path]:
@@ -173,15 +179,48 @@ def _iter_paths(items: Iterable[str]) -> list[Path]:
     return result
 
 
+def _limit_headings(record: dict, maximum: int) -> None:
+    """Bound the serialized heading list while retaining both ends of a map."""
+    headings = record.get("headings", [])
+    if maximum <= 0 or len(headings) <= maximum:
+        return
+    keep_front = maximum // 2
+    keep_back = maximum - keep_front
+    omitted = len(headings) - keep_front - keep_back
+    marker = {"level": 0, "title": f"…[{omitted} headings omitted; query a section with slice_document.py]…", "line": 0}
+    record["headings"] = headings[:keep_front] + [marker] + headings[-keep_back:]
+    record["headings_truncated"] = True
+    record["headings_omitted"] = omitted
+
+
+def _limit_links(record: dict, maximum: int) -> None:
+    links = record.get("links", [])
+    if maximum <= 0 or len(links) <= maximum:
+        return
+    keep_front = maximum // 2
+    keep_back = maximum - keep_front
+    omitted = len(links) - keep_front - keep_back
+    record["links"] = links[:keep_front] + [f"…[{omitted} links omitted; query exact references as needed]…"] + links[-keep_back:]
+    record["links_truncated"] = True
+    record["links_omitted"] = omitted
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("paths", nargs="+", help="Markdown files or directories")
     parser.add_argument("--json", action="store_true", help="emit JSON instead of a readable outline")
+    parser.add_argument("--include-formulas", action="store_true", help="include up to 20 truncated formula candidates")
+    parser.add_argument("--tree", action="store_true", help="include a nested heading tree in JSON")
+    parser.add_argument("--max-headings", type=int, default=300, help="maximum headings serialized per file; 0 means all")
+    parser.add_argument("--max-links", type=int, default=100, help="maximum links serialized per file; 0 means all")
     args = parser.parse_args()
     paths = _iter_paths(args.paths)
     if not paths:
         return 2
-    records = [extract(path) for path in paths]
+    records = [extract(path, include_formulas=args.include_formulas, include_tree=args.tree) for path in paths]
+    for record in records:
+        _limit_headings(record, args.max_headings)
+        _limit_links(record, args.max_links)
     if args.json:
         json.dump(records if len(records) > 1 else records[0], sys.stdout, ensure_ascii=False, indent=2)
         sys.stdout.write("\n")
@@ -193,7 +232,10 @@ def main() -> int:
         if record["first_snippet"]:
             print(f"  intro: {record['first_snippet']}")
         for heading in record["headings"]:
-            print(f"  {'  ' * (heading['level'] - 1)}- L{heading['line']}: {heading['title']}")
+            if heading["level"] == 0:
+                print(f"  {heading['title']}")
+            else:
+                print(f"  {'  ' * (heading['level'] - 1)}- L{heading['line']}: {heading['title']}")
         if record["links"]:
             print(f"  links: {', '.join(record['links'][:12])}")
         if record["formula_candidate_count"]:

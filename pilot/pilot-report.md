@@ -17,6 +17,16 @@ use, claim boundaries, proof status, placement tables, and a reading entry).
 The pilot therefore treats them as semantic sources and repairs the reader
 route around them, rather than using their full prose as a style exemplar.
 
+## Context-budget replay
+
+The 5,941-line `tide-mathematical-foundations.md` source is about 138k
+characters and contains 181 headings and roughly 2,049 formula candidates. A
+default spine inventory is about 13k characters and omits formula bodies and
+the duplicate heading tree. A targeted slice of `当前数学结论` (lines
+2574–2588) is about 1.7k characters. This is the intended operating pattern:
+the full source remains on disk, while the working context carries a map, a
+small excerpt, and explicit locators.
+
 ## One-page shared orientation
 
 ### Mathematical lower-bound thread

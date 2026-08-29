@@ -18,6 +18,8 @@ do not put unpublished material in a shared/external service by default.
 ├── source-map.yaml           # source artifacts and authoritative roles
 ├── decisions.yaml           # accepted, rejected, and deferred branches
 ├── impact.yaml               # optional reverse/dependency index
+├── index/                    # generated spines/ranges (small, replaceable)
+├── cards/                    # compact section cards with source locators
 └── handoffs/                 # dated, short human-readable checkpoints
 ```
 
@@ -25,6 +27,12 @@ JSON is also acceptable when tooling or version control makes it safer. YAML
 examples in this reference are illustrative schemas, not a demand to convert
 an existing repository. Keep entries small and link to source locators rather
 than copying whole documents.
+
+For a long source, put the spine and section-range inventory in `index/`, and
+put one card per meaningful section or verified dependency in `cards/`. Cards
+should contain conclusions and locators, not a second copy of the source. They
+may be regenerated when a source hash or modification time changes; mark stale
+cards `revisit` rather than silently merging old and new prose.
 
 ## Stable profile versus session context
 
@@ -122,4 +130,3 @@ available) with the last handoff. If a source changed underneath the ledger,
 mark dependent entries `revisit` rather than assuming the old interpretation
 still holds. For parallel branches, use namespaced decision IDs and merge only
 after checking contradictory assumptions.
-
