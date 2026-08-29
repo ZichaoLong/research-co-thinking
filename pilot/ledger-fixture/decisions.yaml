@@ -1,0 +1,5 @@
+- id: D-route
+  options: [keep-oracle-bound, broaden-to-all-recurrences]
+  rationale: "preserve the counterexample boundary"
+  reversible: true
+  status: confirmed

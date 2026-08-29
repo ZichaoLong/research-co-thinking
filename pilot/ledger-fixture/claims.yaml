@@ -1,0 +1,6 @@
+- id: C-example
+  statement: affine recurrence is scan-composable under stated operation
+  modality: empirical-result
+  boundary: "under the displayed affine composition"
+  status: supported
+  evidence_ids: [E-example]

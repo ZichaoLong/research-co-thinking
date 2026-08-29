@@ -1,0 +1,6 @@
+- id: S-q
+  glyph: q_t
+  object_id: O-state-space
+  scope: chain
+  declared_in: pilot-report.md#ledger
+  first_use: pilot-report.md#ledger

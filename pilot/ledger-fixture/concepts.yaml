@@ -1,0 +1,5 @@
+- id: O-state-space
+  kind: object
+  label: routing state space
+  scope: model
+  status: confirmed

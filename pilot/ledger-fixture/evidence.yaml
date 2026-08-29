@@ -1,0 +1,6 @@
+- id: E-example
+  kind: derivation
+  artifact_id: A-pilot
+  conditions: "the affine pair operation is associative"
+  result: scan-composable
+  limitations: "example only"

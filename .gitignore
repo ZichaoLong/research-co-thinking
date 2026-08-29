@@ -1,0 +1,16 @@
+# Python helper by-products
+__pycache__/
+*.py[cod]
+
+# Local/editor state and generated renders
+.research-co-thinking/
+.pytest_cache/
+.venv/
+*.pptx
+*.pdf
+*.tmp
+*.swp
+
+# OS/editor metadata
+.DS_Store
+Thumbs.db
