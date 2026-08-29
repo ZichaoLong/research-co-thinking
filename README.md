@@ -25,12 +25,18 @@ as evidence of understanding.
 
 This repository is intentionally kept separate from the author's research
 documents. To make it available as an automatically discovered Codex skill,
-copy or symlink the repository directory to the local Codex skills directory
-after reviewing it, for example:
+copy or symlink the repository directory to a local Codex skill directory after
+reviewing it. In current Codex documentation, a user-level location is
+`~/.agents/skills/` (a repository-level `.agents/skills/` also works):
 
 ```bash
-cp -a research-co-thinking "${CODEX_HOME:-$HOME/.codex}/skills/"
+mkdir -p ~/.agents/skills
+ln -s /path/to/research-co-thinking ~/.agents/skills/research-co-thinking
 ```
+
+Some older/local installations use `$CODEX_HOME/skills` or `~/.codex/skills`;
+use the skill root reported by that installation. Explicit invocation remains
+`$research-co-thinking` because implicit invocation is disabled here.
 
 The repository itself does not require network services or third-party runtime
 packages. The helper scripts use the Python standard library. They report
@@ -43,4 +49,3 @@ The design was informed by public mathematical-authoring, paper-planning,
 dependency-audit, and diagnostic-teaching projects. Their prose and code are
 not copied here, and none is a runtime dependency. The `pilot/` report names
 only project-local source paths and does not modify those files.
-
